@@ -3,6 +3,10 @@ const Model = require('../models/Article');
 
 const router = express.Router();
 
+
+
+//############## articles routes ##########
+
 //Post Method
 router.post('/article', async (req, res) => {
     const data = new Model({
@@ -84,17 +88,66 @@ router.get('/article/:id/comments', async (req, res) => {
     }
 })
 
-//update comment for specific article
-router.delete('/deleteComment/:id/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        const data = await Model.findById(id).findByIdAndDelete(id)
-        res.send(`Document with ${data.name} has been deleted..`)
-    }
-    catch (error) {
-        res.status(400).json({ message: error.message })
-    }
-})
+//add comment to specific article
+router.post('/article/:id/addComment', async (req, res) => {
+    try{
+        const data = await Model.findOneAndUpdate(
+            req.params.id , 
+            { $push: { "comments" : {
+                content:  req.body.content,
+                username: req.body.username,
+            }  } },
+            {safe: true, upsert: true, new : true},
+           
+            );
+            res.json(data);
+            }
+            catch(error){
+                res.status(500).json({message: error.message})
+            }
+}) 
+
+//update specific comment
+router.patch('/comment/:id/:comment', async (req, res) => {
+    try{
+        const data = await Model.updateOne(
+            {_id: req.params.id}
+            , {
+            $set: {
+              "comments": {
+                content:  req.body.content,
+                username: req.body.username,
+              },
+            },
+          });
+          res.send(`Document updated..`);
+            }
+            catch(error){
+                res.status(500).json({message: error.message})
+            }
+}) 
+
+//delete specific comment
+router.delete('/comment/:id/:comment', async (req, res) => {
+    try{
+        const data = await Model.updateOne(
+            {_id: req.params.id}
+            , {
+            $pull: {
+              "comments": {_id: req.params.comment},
+            },
+          });
+          res.send(`Document deleted..`);
+            }
+            catch(error){
+                res.status(500).json({message: error.message})
+            }
+}) 
+
+
+
+
+
 
 
 module.exports = router;

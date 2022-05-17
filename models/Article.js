@@ -26,4 +26,4 @@ const dataSchema = new mongoose.Schema({
     timestamps: true,
 })
 
-module.exports = mongoose.model('Data', dataSchema)
+module.exports = mongoose.model('Article', dataSchema)
